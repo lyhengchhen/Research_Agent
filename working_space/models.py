@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator, ValidationError
 from typing import Literal
-from datetime import date
 
+# User Query → [ArxivSearchInput] → ArXiv API → [Paper] → [ArxivSearchResult] → Claude → [ResearchReport]
 
 class ArxivSearchInput(BaseModel):
     """Input schema for the ArXiv search tool.
@@ -42,7 +42,7 @@ class Paper(BaseModel):
         return v 
 
     def truncate_long_abstract(cls, v: str) -> str:
-        return v[:1200] + "..." if len(v) > 1200 else v
+        return v[:1200] + "..." if len(v) > 1200 else v # avoid burning the tokens for nothing
 
     def to_summary(self) -> str:
         authors_short = ", ".join(self.authors[:3])
@@ -55,7 +55,7 @@ class Paper(BaseModel):
                 )
 
 class ArXivSearchResult(BaseModel):
-    """Wrap a list of papers return from one search call."""
+    """Wrap a list of papers return from one search call.""" #Great for context engineering
 
     query: str
     total_papers: int 
@@ -133,9 +133,6 @@ class ResearchReport(BaseModel):
             lines.append(f"-{next_step}")
 
         return "\n".join(lines)
-
-
-
 
 
 if __name__ == "__main__": 
