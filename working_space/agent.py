@@ -1,11 +1,9 @@
 from dotenv import load_dotenv
-from langchain.agents import create_agent
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.callbacks import BaseCallbackHandler
-from langgraph.prebuilt import create_react_agent
 from tool import search_arxiv
 from models import ResearchReport, NotablePaper
 from deepagents import create_deep_agent
+from deepagents.backends import FilesystemBackend
 
 import re
 import os 
@@ -70,14 +68,17 @@ Rules:
 - Be specific — name actual techniques, model names, benchmark results from abstracts
 """
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_PROMPT),
-    ("human", "{input}"),
-    ("placeholder", "{agent_scratchpad}"),
-])
+root = "."
 
-
-agent = create_deep_agent(
+deep_agent = create_deep_agent(
     model = "google_genai:gemini-3.5-flash",
-    backend = Filesystem
+    tools = [search_arxiv],
+    system_prompt = SYSTEM_PROMPT,
+    backend = FilesystemBackend(root_dir = root, virtual_mode = True),
 )
+
+if __name__ == "__main__":
+    query = input("Enter research topic:")
+
+    
+
