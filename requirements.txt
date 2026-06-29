@@ -4,3 +4,4 @@ pydantic
 google-genai
 arxiv 
 langchain_community
+deepagent
