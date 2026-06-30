@@ -80,5 +80,34 @@ deep_agent = create_deep_agent(
 if __name__ == "__main__":
     query = input("Enter research topic:")
 
-    
+    for chunk in deep_agent.stream({"message": [{"role": "user", "content": "{query}"}]}):
+        # chunk keys: 'agent' (model output) or tool name (tool result)
+        if "deep_agent" in chunk:
+            for msg in chunk["agent"].get("messages", []):
+                # Tool calls to show what the agent is searching
+                if hasattr(msg, "tool_calls") and msg.tool_calls:
+                    for tc in msg.tool_calls:
+                        args = tc.get("args", {})
+                        query = next(iter(args.values()), "")
+                        print(f"\n Searching: {str(query)[:120]}")
+                # Final text response
+                elif hasattr(msg, "content") and msg.content:
+                    print(msg.content, end = "", flush = True)
+        # show paper count
+        else: 
+            for tool_name, tool_state in chunk.items():
+                if isinstance(tool_state, dict):
+                    msgs = tool_state.get("messages", [])
+                elif isinstance(tool_state, list):
+                    msgs = tool_state
+                else: 
+                    msgs = [tool_state]
 
+                for msg in msgs:
+                    content = str(getattr(msg, "content", ""))
+                    if "Found" in content: 
+                        match = re.search(r"Found (\d+) paper", content)
+                        if match:
+                            print(f"Research {match.group(1)} papers")
+                        else:
+                            print("No result for this query! \n Please try again")
