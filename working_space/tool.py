@@ -21,7 +21,6 @@ def get_arxiv(query: str, max_results: int = 5, sort_by: int = "relevance") -> A
      response = requests.get(base_url, params = params)
      response.raise_for_status()
 
-
      root = ET.fromstring(response.content) # read the XML file
      namespace = {"atom": "http://www.w3.org/2005/atom"} # To identify and locate the elements correctly in the XML response
 
