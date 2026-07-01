@@ -4,15 +4,14 @@ from tool import search_arxiv
 from models import ResearchReport, NotablePaper
 from deepagents import create_deep_agent
 from deepagents.backends import FilesystemBackend
-
+from langgraph.checkpoint.memory import InMemorySaver
 import re
 import os 
 
 load_dotenv()
-
 os.environ["GEMINI_API_KEY"] = os.getenv("GEMINI_API_KEY")
 
-class ResearchProgressCallback(BaseCallbackHandler):
+class Myhandler(BaseCallbackHandler):
     """Hooks into LangChain's event stream to show what the agent is doing."""
 
     def on_tool_start(self, serialized, input_str, **kwargs):
@@ -75,12 +74,17 @@ deep_agent = create_deep_agent(
     tools = [search_arxiv],
     system_prompt = SYSTEM_PROMPT,
     backend = FilesystemBackend(root_dir = root, virtual_mode = True),
+    checkpointer = InMemorySaver()
 )
+
+config = {"configurable": {"thread_id": "id_100"},
+          "callbacks": [Myhandler()]}
 
 if __name__ == "__main__":
     query = input("Enter research topic:")
 
-    for chunk in deep_agent.stream({"message": [{"role": "user", "content": "{query}"}]}):
+    for chunk in deep_agent.stream({"message": [{"role": "user", "content": "{query}"}]},
+                                   config = config):
         # chunk keys: 'agent' (model output) or tool name (tool result)
         if "deep_agent" in chunk:
             for msg in chunk["agent"].get("messages", []):
@@ -111,3 +115,6 @@ if __name__ == "__main__":
                             print(f"Research {match.group(1)} papers")
                         else:
                             print("No result for this query! \n Please try again")
+
+
+
