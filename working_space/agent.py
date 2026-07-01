@@ -83,10 +83,10 @@ config = {"configurable": {"thread_id": "id_100"},
 if __name__ == "__main__":
     query = input("Enter research topic:")
 
-    for chunk in deep_agent.stream({"message": [{"role": "user", "content": "{query}"}]},
+    for chunk in deep_agent.stream({"message": [{"role": "user", "content": query}]},
                                    config = config):
         # chunk keys: 'agent' (model output) or tool name (tool result)
-        if "deep_agent" in chunk:
+        if "deep_agent" in chunk:e x
             for msg in chunk["agent"].get("messages", []):
                 # Tool calls to show what the agent is searching
                 if hasattr(msg, "tool_calls") and msg.tool_calls:
